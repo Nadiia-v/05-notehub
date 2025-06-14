@@ -2,24 +2,16 @@ import { createPortal } from "react-dom";
 import NoteForm from "../NoteForm/NoteForm.tsx";
 import css from "./NoteModal.module.css";
 
-interface Props {
+type Props = {
   onClose: () => void;
-}
+  onSuccess: () => void;
+};
 
-const NoteModal = ({ onClose }: Props) => {
-  const handleBackdropClick = (e: React.MouseEvent) => {
-    if (e.target === e.currentTarget) onClose();
-  };
-
+const NoteModal = ({ onClose, onSuccess }: Props) => {
   return createPortal(
-    <div
-      className={css.backdrop}
-      role="dialog"
-      aria-modal="true"
-      onClick={handleBackdropClick}
-    >
-      <div className={css.modal}>
-        <NoteForm onSuccess={onClose} onCancel={onClose} />
+    <div className={css.backdrop} onClick={onClose} role="dialog">
+      <div className={css.modal} onClick={(e) => e.stopPropagation()}>
+        <NoteForm onSuccess={onSuccess} />
       </div>
     </div>,
     document.body
