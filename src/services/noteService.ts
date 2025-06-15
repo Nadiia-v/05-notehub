@@ -1,5 +1,5 @@
 import axios from "axios";
-import type { Note, FetchNotesResponse } from "../types/note.ts";
+import type { Note } from "../types/note.ts";
 const myKey = import.meta.env.VITE_NOTEHUB_TOKEN;
 const API = axios.create({
   baseURL: "https://notehub-public.goit.study/api",
@@ -8,24 +8,26 @@ const API = axios.create({
   },
 });
 
-export const fetchNotes = (page: number, search?: string) => {
-  const params: { page: number; perPage: number; search?: string } = {
+export const fetchNotes = (search: string, page: number) => {
+  const params: { search: string; page: number; perPage: number } = {
+    search,
     page,
     perPage: 10,
   };
-  if (search) params.search = search;
-  return API.get<FetchNotesResponse>("/notes", { params }).then((r) => r.data);
+  return API.get<{ results: Note[]; totalPages: number }>("/notes", {
+    params,
+  }).then((r) => r.data);
 };
 
 type NoteInput = {
   title: string;
   content: string;
-  tag: "Todo" | "Work" | "Personal" | "Meeting" | "Shopping";
+  tag: string;
 };
 export const createNote = (data: NoteInput) => {
   return API.post<Note>("/notes", data).then((r) => r.data);
 };
 
-export const deleteNote = (id: string) => {
+export const deleteNote = (id: number) => {
   return API.delete<Note>(`/notes/${id}`).then((r) => r.data);
 };

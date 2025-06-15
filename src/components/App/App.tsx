@@ -1,9 +1,10 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   useQuery,
   useQueryClient,
   keepPreviousData,
 } from "@tanstack/react-query";
+import { useDebounce } from "use-debounce";
 import NoteList from "../NoteList/NoteList.tsx";
 import NoteModal from "../NoteModal/NoteModal.tsx";
 import SearchBox from "../SearchBox/SearchBox.tsx";
@@ -14,20 +15,25 @@ import css from "./App.module.css";
 const App = () => {
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState("");
+  const [debouncedSearch] = useDebounce(search, 500);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   const queryClient = useQueryClient();
-  const queryKey = ["notes", page, search];
+  const queryKey = ["notes", debouncedSearch, page];
+
+  useEffect(() => {
+    setPage(1);
+  }, [debouncedSearch]);
 
   const { data, isLoading, isError } = useQuery({
     queryKey,
-    queryFn: () => fetchNotes(page, search),
+    queryFn: () => fetchNotes(debouncedSearch, page),
     placeholderData: keepPreviousData,
   });
 
-  const handleDelete = async (id: string) => {
+  const handleDelete = async (id: number) => {
     await deleteNote(id);
-    queryClient.invalidateQueries({ queryKey });
+    queryClient.invalidateQueries({ queryKey: ["notes"] });
   };
 
   return (
@@ -59,7 +65,7 @@ const App = () => {
         <NoteModal
           onClose={() => setIsModalOpen(false)}
           onSuccess={() => {
-            queryClient.invalidateQueries({ queryKey });
+            queryClient.invalidateQueries({ queryKey: ["notes"] });
             setIsModalOpen(false);
           }}
         />

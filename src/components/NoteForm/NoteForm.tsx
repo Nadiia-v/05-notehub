@@ -1,34 +1,49 @@
 import { Formik, Form, Field, ErrorMessage } from "formik";
 import * as Yup from "yup";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { createNote } from "../../services/noteService.ts";
 import css from "./NoteForm.module.css";
+import { toast } from "react-hot-toast";
 
-const validationSchema = Yup.object({
-  title: Yup.string().min(3).required(),
-  content: Yup.string(),
-  tag: Yup.string()
-    .oneOf(["Todo", "Work", "Personal", "Meeting", "Shopping"])
-    .required(),
-});
-
-type Props = {
+type NoteFormProps = {
   onSuccess: () => void;
+  onClose: () => void;
 };
 type NoteFormValues = {
   title: string;
   content: string;
-  tag: "Todo" | "Work" | "Personal" | "Meeting" | "Shopping";
+  tag: string;
 };
+const validationSchema = Yup.object({
+  title: Yup.string().min(3).max(50).required("Title is required"),
+  content: Yup.string().max(500).required("Content is required"),
+  tag: Yup.string()
+    .oneOf(["Todo", "Work", "Personal", "Meeting", "Shopping"])
+    .required("Tag is required"),
+});
 
-const NoteForm = ({ onSuccess }: Props) => {
+const NoteForm = ({ onSuccess }: NoteFormProps) => {
+  const queryClient = useQueryClient();
+
+  const mutation = useMutation({
+    mutationFn: createNote,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["notes"] });
+      toast.success("Note created successfully");
+      onSuccess();
+    },
+    onError: () => {
+      toast.error("Failed to create a note");
+    },
+  });
+
   return (
     <Formik<NoteFormValues>
       initialValues={{ title: "", content: "", tag: "Todo" }}
       validationSchema={validationSchema}
-      onSubmit={async (values, { resetForm }) => {
-        await createNote(values);
+      onSubmit={(values, { resetForm }) => {
+        mutation.mutate(values);
         resetForm();
-        onSuccess();
       }}
     >
       <Form className={css.form}>
@@ -57,7 +72,7 @@ const NoteForm = ({ onSuccess }: Props) => {
         </div>
 
         <button type="submit" className={css.submitButton}>
-          Add
+          Create a note
         </button>
       </Form>
     </Formik>

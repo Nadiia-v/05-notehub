@@ -1,17 +1,19 @@
 import css from "./SearchBox.module.css";
 
-type Props = {
+interface SearchBoxProps {
   search: string;
   setSearch: (val: string) => void;
-};
+}
 
-const SearchBox = ({ search, setSearch }: Props) => (
+const SearchBox = ({ search, setSearch }: SearchBoxProps) => (
   <input
     className={css.input}
     type="text"
     placeholder="Search notes"
     value={search}
-    onChange={(e) => setSearch(e.target.value)}
+    onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+      setSearch(e.target.value)
+    }
   />
 );
 
