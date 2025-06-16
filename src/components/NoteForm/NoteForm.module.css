@@ -52,16 +52,16 @@
 .cancelButton {
   padding: 8px 16px;
   font-size: 16px;
-  background-color: #880808;
+  background-color: #702963;
   color: #ffffff;
-  border: 1px solid #ced4da;
+  border: 1px solid #880808;
   border-radius: 4px;
   cursor: pointer;
   transition: background-color 0.2s ease;
 }
 
 .cancelButton:hover {
-  background-color: #e2e6ea;
+  background-color: #880808;
 }
 
 .error {
