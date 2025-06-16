@@ -5,24 +5,24 @@ import { createNote } from "../../services/noteService.ts";
 import css from "./NoteForm.module.css";
 import { toast } from "react-hot-toast";
 
-type NoteFormProps = {
+interface NoteFormProps {
   onSuccess: () => void;
   onClose: () => void;
-};
-type NoteFormValues = {
+}
+interface NoteFormValues {
   title: string;
   content: string;
   tag: string;
-};
+}
 const validationSchema = Yup.object({
   title: Yup.string().min(3).max(50).required("Title is required"),
-  content: Yup.string().max(500).required("Content is required"),
+  content: Yup.string().max(500),
   tag: Yup.string()
     .oneOf(["Todo", "Work", "Personal", "Meeting", "Shopping"])
     .required("Tag is required"),
 });
 
-const NoteForm = ({ onSuccess }: NoteFormProps) => {
+const NoteForm = ({ onSuccess, onClose }: NoteFormProps) => {
   const queryClient = useQueryClient();
 
   const mutation = useMutation({
@@ -53,15 +53,15 @@ const NoteForm = ({ onSuccess }: NoteFormProps) => {
           <ErrorMessage name="title" component="span" className={css.error} />
         </div>
 
-        <div>
+        <div className={css.formGroup}>
           <label htmlFor="content">Content</label>
-          <Field name="content" as="textarea" className={css.input} />
+          <Field name="content" as="textarea" className={css.textarea} />
           <ErrorMessage name="content" component="span" className={css.error} />
         </div>
 
-        <div>
+        <div className={css.formGroup}>
           <label htmlFor="tag">Tag</label>
-          <Field name="tag" as="select" className={css.input}>
+          <Field name="tag" as="select" className={css.select}>
             <option value="Todo">Todo</option>
             <option value="Work">Work</option>
             <option value="Personal">Personal</option>
@@ -70,9 +70,11 @@ const NoteForm = ({ onSuccess }: NoteFormProps) => {
           </Field>
           <ErrorMessage name="tag" component="span" className={css.error} />
         </div>
-
         <button type="submit" className={css.submitButton}>
           Create a note
+        </button>
+        <button type="button" className={css.cancelButton} onClick={onClose}>
+          Cancel
         </button>
       </Form>
     </Formik>

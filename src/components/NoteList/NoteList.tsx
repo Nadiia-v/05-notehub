@@ -4,10 +4,9 @@ import { deleteNote } from "../../services/noteService.ts";
 import css from "./NoteList.module.css";
 import { toast } from "react-hot-toast";
 
-type NoteListProps = {
+interface NoteListProps {
   notes: Note[];
-  onDelete: (id: number) => Promise<void>;
-};
+}
 
 const NoteList = ({ notes }: NoteListProps) => {
   const queryClient = useQueryClient();

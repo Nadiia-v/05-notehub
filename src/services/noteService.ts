@@ -8,22 +8,24 @@ const API = axios.create({
   },
 });
 
+export const PER_PAGE = 12;
+
 export const fetchNotes = (search: string, page: number) => {
-  const params: { search: string; page: number; perPage: number } = {
-    search,
+  const params: { search?: string; page: number; perPage: number } = {
+    ...(search !== "" && { search: search }),
     page,
-    perPage: 10,
+    perPage: PER_PAGE,
   };
-  return API.get<{ results: Note[]; totalPages: number }>("/notes", {
+  return API.get<{ notes: Note[]; totalPages: number }>("/notes", {
     params,
   }).then((r) => r.data);
 };
 
-type NoteInput = {
+export interface NoteInput {
   title: string;
   content: string;
   tag: string;
-};
+}
 export const createNote = (data: NoteInput) => {
   return API.post<Note>("/notes", data).then((r) => r.data);
 };

@@ -9,14 +9,14 @@ import NoteList from "../NoteList/NoteList.tsx";
 import NoteModal from "../NoteModal/NoteModal.tsx";
 import SearchBox from "../SearchBox/SearchBox.tsx";
 import Pagination from "../Pagination/Pagination.tsx";
-import { fetchNotes, deleteNote } from "../../services/noteService.ts";
+import { fetchNotes } from "../../services/noteService.ts";
 import css from "./App.module.css";
 
 const App = () => {
-  const [page, setPage] = useState(1);
-  const [search, setSearch] = useState("");
+  const [page, setPage] = useState<number>(1);
+  const [search, setSearch] = useState<string>("");
   const [debouncedSearch] = useDebounce(search, 500);
-  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
 
   const queryClient = useQueryClient();
   const queryKey = ["notes", debouncedSearch, page];
@@ -31,15 +31,31 @@ const App = () => {
     placeholderData: keepPreviousData,
   });
 
-  const handleDelete = async (id: number) => {
-    await deleteNote(id);
+  const handleSearchChange = (value: string): void => {
+    setSearch(value);
+  };
+  const handlePageChange = (page: number): void => {
+    setPage(page);
+  };
+  const handleModalClose = (): void => {
+    setIsModalOpen(false);
+  };
+  const handleModalSuccess = (): void => {
     queryClient.invalidateQueries({ queryKey: ["notes"] });
+    setIsModalOpen(false);
   };
 
   return (
     <div className={css.app}>
       <header className={css.toolbar}>
-        <SearchBox search={search} setSearch={setSearch} />
+        <SearchBox search={search} setSearch={handleSearchChange} />
+        {data && data.totalPages > 1 && (
+          <Pagination
+            currentPage={page}
+            totalPages={data.totalPages}
+            onPageChange={handlePageChange}
+          />
+        )}
         <button className={css.button} onClick={() => setIsModalOpen(true)}>
           Create note
         </button>
@@ -47,28 +63,14 @@ const App = () => {
 
       {isLoading && <p>Loading...</p>}
       {isError && <p>Error fetching notes</p>}
-      {data && data.results.length ? (
-        <NoteList notes={data.results} onDelete={handleDelete} />
+      {data && data.notes.length ? (
+        <NoteList notes={data.notes} />
       ) : (
         <p>No notes found</p>
       )}
 
-      {data && data.totalPages > 1 && (
-        <Pagination
-          currentPage={page}
-          totalPages={data.totalPages}
-          onPageChange={setPage}
-        />
-      )}
-
       {isModalOpen && (
-        <NoteModal
-          onClose={() => setIsModalOpen(false)}
-          onSuccess={() => {
-            queryClient.invalidateQueries({ queryKey: ["notes"] });
-            setIsModalOpen(false);
-          }}
-        />
+        <NoteModal onClose={handleModalClose} onSuccess={handleModalSuccess} />
       )}
     </div>
   );
